@@ -6,7 +6,6 @@
     "strictNullChecks": true,
     "moduleResolution": "node",
     "outDir": "./lib",
-    "watch": true,
     "skipLibCheck": true,
     "declaration": true
   },
