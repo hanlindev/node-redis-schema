@@ -1,0 +1,30 @@
+{
+  "name": "node-redis-schema",
+  "version": "0.1.0",
+  "description": "Declarative Redis",
+  "main": "index.js",
+  "repository": "https://github.com/hanlindev/node-redis-schema",
+  "author": "Han Lin <hanlin.dev@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@types/lodash": "^4.14.67",
+    "@types/moment": "^2.13.0",
+    "@types/redis": "^2.6.0",
+    "global": "^4.3.2",
+    "lodash": "^4.17.4",
+    "moment": "^2.18.1",
+    "redis": "^2.7.1"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.0.1",
+    "@types/mocha": "^2.2.41",
+    "chai": "^4.0.2",
+    "mocha": "^3.4.2",
+    "typescript": "2.3.4"
+  },
+  "scripts": {
+    "test": "mocha",
+    "prepublish": "tsc"
+  },
+  "types": "dist/src/index.d.ts"
+}
