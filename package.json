@@ -1,6 +1,6 @@
 {
   "name": "redis-schema",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Declarative Redis",
   "main": "index.js",
   "repository": "https://github.com/hanlindev/node-redis-schema",
@@ -26,5 +26,5 @@
     "test": "mocha",
     "prepublish": "tsc"
   },
-  "types": "dist/src/index.d.ts"
+  "types": "lib/src/index.d.ts"
 }
