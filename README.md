@@ -119,7 +119,7 @@ async function saveLoad(): Promise<void> {
 }
 ```
 
-If you know React's (prop-types)[https://www.npmjs.com/package/prop-types] syntax, the redis schema's syntax should look very familiar to you. Just replace the prop-types terms with Redis terms. Built-in types include:
+If you know React's [prop-types'](https://www.npmjs.com/package/prop-types) syntax, the redis schema's syntax should look very familiar to you. Just replace the prop-types terms with Redis terms. Built-in types include:
 1. `string`
 2. `number`
   
