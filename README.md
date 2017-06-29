@@ -1,7 +1,7 @@
 Node Redis Schema (Beta)
 =================
 
-Declarative Redis - persist complex data structures with Redis at ease.
+Declarative Redis - persist structural data with Redis at ease.
 
 ## Installation
 
@@ -137,6 +137,10 @@ If you know React's (prop-types)[https://www.npmjs.com/package/prop-types] synta
    Similar to `listOf` but the argument should be an object of `IRedisType` implementations.
 
 All built-in types comes with data validation logic. 1 ~ 5 are simple `instanceof` checks. 6 and 7 uses their type arguments' validation and only passes when all items are valid. The implication is that all fields in a schema are treated as required fields. Null or undefined values are not acceptable.
+
+## Intended Usage
+
+Essentially, all Redis Schema does is key management. It abstracts away the process to come up with Redis keys, ensuring consistent keys across your Redis server. Thus Redis Schema is not an ORM. If you need to change the structure of persisted data, you'll still need to do it manually. However with the help of a key registry (comiong soon), you are able to perform automated migration by collecting all old data in your migration script. Still, this library will be perfect for you if you only want the ability to persist structural data in Redis.
 
 ## Roadmap to V1:
 
