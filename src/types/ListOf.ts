@@ -3,12 +3,16 @@ import * as redis from 'redis';
 import {Multi} from 'redis';
 
 import {BaseType} from './BaseType';
-import {RedisSchemaItemFactoryType, IRedisType, IMultiSaveCallback} from './interfaces';
+import {IRedisSchemaItemFactory, ISchemaItemFactory, IRedisType, IMultiSaveCallback} from './interfaces';
 import {Shape} from './Shape';
 
 export class ListOf<T> extends BaseType<Array<T>> {
-  constructor(key: string, readonly shape: RedisSchemaItemFactoryType<T>) {
-    super(key);
+  constructor(
+    key: string, 
+    readonly isRequired: boolean, 
+    readonly shape: ISchemaItemFactory<T>,
+  ) {
+    super(key, isRequired);
   }
 
   genLoad(): Promise<Array<T> | null> {
@@ -23,7 +27,7 @@ export class ListOf<T> extends BaseType<Array<T>> {
             const result = await Promise.all(_.range(numberLength).map(
               async (index) => {
                 const finalShape = this.shape(this.key, index.toString());
-                return await finalShape.genLoad()
+                return await finalShape.genLoad();
               }
             ));
             if (this.validate(result)) {
@@ -49,12 +53,15 @@ export class ListOf<T> extends BaseType<Array<T>> {
     }
 
     multi.del(this.key);
-    value.forEach((item, i) => {
-      const finalShape = this.shape(this.key, i.toString());
-      finalShape.multiSave(item, multi);
-    });
-    multi.set(this.key, value.length.toString());
-    return this.multiExpire(value, multi);
+    if (Array.isArray(value)) {
+      value.forEach((item, i) => {
+        const finalShape = this.shape(this.key, i.toString());
+        finalShape.multiSave(item, multi);
+      });
+      multi.set(this.key, value.length.toString());
+      this.multiExpire(value, multi);
+    }
+    return multi;
   }
 
   multiExpire(value: Array<any>, multi: Multi): Multi {
@@ -63,24 +70,42 @@ export class ListOf<T> extends BaseType<Array<T>> {
     }
 
     super.multiExpire(value, multi);
-    value.forEach((item, i) => {
+    Array.isArray(value) && value.forEach((item, i) => {
       const finalShape = this.shape(this.key, i.toString());
       finalShape.setTtl(this.ttl);
       finalShape.multiExpire(item, multi);
-    })
+    });
     return multi;
   }
 
   validate(value: any): boolean {
+    if (this.isUndefinedValueAndOptional(value)) {
+      return true;
+    }
+
     return Array.isArray(value) && value.every((item, i) => {
       const finalShape = this.shape(this.key, i.toString());
       return finalShape.validate(item);
     });
   }
 
-  static getFactory<T>(shape: RedisSchemaItemFactoryType<T>) {
-    return (parentKey: string, dataKey: string) => {
-      return new ListOf<T>(BaseType.getFinalKey(parentKey, dataKey), shape);
+  static getFactory() {
+    return <T>(shape: ISchemaItemFactory<T>): IRedisSchemaItemFactory<Array<T>> => {
+      const result: any = (parentKey: string, dataKey: string) => {
+        return new ListOf<T>(
+          BaseType.getFinalKey(parentKey, dataKey), 
+          false, 
+          shape,
+        );
+      };
+      result.isRequired = (parentKey: string, dataKey: string) => {
+        return new ListOf<T>(
+          BaseType.getFinalKey(parentKey, dataKey), 
+          true, 
+          shape,
+        );
+      };
+      return result;
     };
   }
 }

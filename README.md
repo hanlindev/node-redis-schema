@@ -136,6 +136,10 @@ If you know React's [prop-types'](https://www.npmjs.com/package/prop-types) synt
 
    Similar to `listOf` but the argument should be an object of `IRedisType` implementations.
 
+8. `instanceOf`
+
+   Similar to `listOf` but the argument should be an object of `IRedisComposeType` implementation. All subclasses of `BaseModel` are `IRedisComposeType` implementations.
+
 All built-in types comes with data validation logic. 1 ~ 5 are simple `instanceof` checks. 6 and 7 uses their type arguments' validation and only passes when all items are valid. The implication is that all fields in a schema are treated as required fields. Null or undefined values are not acceptable.
 
 ## Intended Usage

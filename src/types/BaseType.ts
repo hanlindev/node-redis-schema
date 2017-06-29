@@ -5,11 +5,15 @@ import {IRedisType, RedisTtlType} from './interfaces';
 export abstract class BaseType<TLoad> implements IRedisType<TLoad> {
   protected ttl?: RedisTtlType;
 
-  constructor(readonly key: string) {}
+  constructor(readonly key: string, readonly isRequired: boolean) {}
   abstract genLoad(): Promise<TLoad>;
   // You should call this.multiExpire in multiSave to persist the expire.
   abstract multiSave(value: TLoad, multi: Multi): Multi;
   abstract validate(value: TLoad): boolean;
+
+  protected isUndefinedValueAndOptional(value: any): boolean {
+    return !this.isRequired && (value === null || value === undefined);
+  }
 
   setTtl(ttl?: RedisTtlType): this {
     this.ttl = ttl;

@@ -32,13 +32,24 @@ export interface IRedisType<TLoad> {
   setTtl(ttl?: RedisTtlType): this;
 }
 
-export type RedisSchemaItemFactoryType<TP> =
-  (parentKey: string, dataKey: string) => IRedisType<TP>;
+export interface ISchemaItemFactory<TP> {
+  (parentKey: string, dataKey: string): IRedisType<TP>;
+}
+
+export interface IRedisSchemaItemFactory<TP> extends ISchemaItemFactory<TP> {
+  isRequired: (parentKey: string, dataKey: string) => IRedisType<TP>;
+}
 
 export type RedisSchemaType = {
-  [key: string]: RedisSchemaItemFactoryType<any>;
+  [key: string]: ISchemaItemFactory<any>;
 }
 
 export interface IRedisComposeType<T> extends IRedisType<T> {
   getSchema(): RedisSchemaType;
+}
+
+export interface IModelFactory<T> {
+  new (...args: Array<any>): IRedisComposeType<T>;
+  name: string;
+  getInstance(overrideKey?: string): IRedisComposeType<T>;
 }

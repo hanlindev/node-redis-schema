@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import * as redis from 'redis';
 import {BaseType} from './BaseType';
-import {IMultiSaveCallback} from './interfaces';
+import {IMultiSaveCallback, IRedisSchemaItemFactory} from './interfaces';
 
 export class RSet extends BaseType<Set<string>> {
   multiSave(
@@ -12,18 +12,24 @@ export class RSet extends BaseType<Set<string>> {
     if (!this.validate(value)) {
       throw new TypeError('Argument to RedisSet is not a set of string');
     }
-    this
-      .multiDelete(multi)
-      .sadd(this.key, Array.from(value), (error) => {
+
+    this.multiDelete(multi);
+    if (value) {
+      multi.sadd(this.key, Array.from(value), (error) => {
         if (!error) {
           cb && cb(this.key);
         }
       });
-    this.multiExpire(value, multi);
+      this.multiExpire(value, multi);
+    }
     return multi;
   }
 
-  validate(value: any): value is Set<string> {
+  validate(value: any): boolean {
+    if (this.isUndefinedValueAndOptional(value)) {
+      return true;
+    }
+
     if (value instanceof Set) {
       return Array.from(value).every((item) => {
         return typeof item === 'string';
@@ -50,7 +56,13 @@ export class RSet extends BaseType<Set<string>> {
     });
   }
 
-  static getFactory(parentKey: string, dataKey: string) {
-    return new RSet(BaseType.getFinalKey(parentKey, dataKey));
+  static getFactory(): IRedisSchemaItemFactory<Set<string>> {
+    const result: any = (parentKey: string, dataKey: string) => {
+      return new RSet(BaseType.getFinalKey(parentKey, dataKey), false);
+    };
+    result.isRequired = (parentKey: string, dataKey: string) => {
+      return new RSet(BaseType.getFinalKey(parentKey, dataKey), false);
+    };
+    return result;
   }
 }

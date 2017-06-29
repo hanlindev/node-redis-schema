@@ -3,6 +3,7 @@ import * as redis from 'redis';
 import * as moment from 'moment';
 import {Multi} from 'redis';
 import {IRedisType, IRedisComposeType, RedisSchemaType, RedisTtlType, IMultiSaveCallback} from './interfaces';
+import {isNullOrUndefined} from './utils';
 
 export interface IBaseModelProps {
   [key: string]: any;
@@ -48,6 +49,11 @@ export abstract class BaseModel<T extends IBaseModelProps> implements IRedisComp
     if (!this.validate(props)) {
       throw new TypeError(`Argument to ${this.constructor.name} is invalid.`);
     }
+
+    if (isNullOrUndefined(props)) {
+      return multi;
+    }
+
     let remainingElements: number = _.size(finalSchema);
     _.forEach(finalSchema,  async (item, key) => {
       if (--remainingElements === 0) {
@@ -65,7 +71,7 @@ export abstract class BaseModel<T extends IBaseModelProps> implements IRedisComp
   public multiExpire(props: T, multi: Multi): Multi {
     const finalSchema = this.getFinalSchema();
     _.forEach(finalSchema, (item, key) => {
-      item.multiExpire(props[key], multi);
+      !isNullOrUndefined(props[key]) && item.multiExpire(props[key], multi);
     });
     return multi;
   }
@@ -90,7 +96,9 @@ export abstract class BaseModel<T extends IBaseModelProps> implements IRedisComp
     }));
     const model: any = {};
     results.forEach((result) => {
-      model[result.fieldName] = result.value;
+      if (result.value !== null) {
+        model[result.fieldName] = result.value;
+      }
     });
     return (this.validate(model)) ? model as T : null;
   }
@@ -108,7 +116,7 @@ export abstract class BaseModel<T extends IBaseModelProps> implements IRedisComp
     });
   }
 
-  validate(value: any): value is T {
+  validate(value: any): boolean {
     const finalSchema = this.getFinalSchema();
     return _.every(finalSchema, (item, key) => {
       return item.validate(value[key]);

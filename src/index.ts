@@ -1,17 +1,12 @@
 import * as redis from 'redis';
 import {Multi} from 'redis';
-import {IRedisComposeType} from './types';
+import {IRedisComposeType, IModelFactory} from './types';
 
 export * from './types';
 
-export interface IRedisModelClass<T> {
-  new (key: string): IRedisComposeType<T>;
-  getInstance(): IRedisComposeType<T>;
-}
-
 export class Redis<T> {
   private model: IRedisComposeType<T>;
-  constructor(readonly clazz: IRedisModelClass<T>) {
+  constructor(readonly clazz: IModelFactory<T>) {
     this.model = clazz.getInstance();
   }
 
