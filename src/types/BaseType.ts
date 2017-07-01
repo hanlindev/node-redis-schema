@@ -1,6 +1,7 @@
 import * as redis from 'redis';
 import {Multi} from 'redis';
 import {IRedisType, RedisTtlType} from './interfaces';
+import {expireImpl} from './utils';
 
 export abstract class BaseType<TLoad> implements IRedisType<TLoad> {
   protected ttl?: RedisTtlType;
@@ -28,17 +29,7 @@ export abstract class BaseType<TLoad> implements IRedisType<TLoad> {
   }
 
   multiExpire(value: TLoad, multi: Multi): Multi {
-    if (this.ttl) {
-      switch (this.ttl.type) {
-        case 'expire':
-          multi.expire(this.key, this.ttl.value);
-          break;
-        case 'expireAt':
-          multi.expireat(this.key, this.ttl.value);
-          break;
-      }
-    }
-    return multi;
+    return expireImpl(multi, this.getKey(), this.ttl);
   }
 
   multiDelete(multi: Multi): Multi {

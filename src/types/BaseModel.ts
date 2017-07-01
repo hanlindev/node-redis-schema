@@ -1,6 +1,7 @@
 import * as _ from 'lodash';
 import * as redis from 'redis';
 import * as moment from 'moment';
+import {RSet} from './Set';
 import {Multi} from 'redis';
 import {IRedisType, IRedisComposeType, RedisSchemaType, RedisTtlType, IMultiSaveCallback} from './interfaces';
 import {isNullOrUndefined} from './utils';
@@ -16,8 +17,10 @@ export interface IModelOptions {
 export abstract class BaseModel<T extends IBaseModelProps> implements IRedisComposeType<T> {
   abstract getSchema(): RedisSchemaType;
   private ttl?: RedisTtlType;
+  private fieldNameSet: RSet;
 
   constructor(readonly key: string, options: IModelOptions = {}) {
+    this.fieldNameSet = new RSet(key, true);
     this.setTtl(options.ttl);
   }
 
@@ -37,6 +40,7 @@ export abstract class BaseModel<T extends IBaseModelProps> implements IRedisComp
 
   public setTtl(ttl?: RedisTtlType): this {
     this.ttl = ttl;
+    this.fieldNameSet.setTtl(ttl);
     return this;
   }
 
@@ -54,15 +58,11 @@ export abstract class BaseModel<T extends IBaseModelProps> implements IRedisComp
       return multi;
     }
 
-    let remainingElements: number = _.size(finalSchema);
+    const fieldNames = new Set(Object.keys(props));
+    this.fieldNameSet.multiSave(fieldNames, multi, cb);
+
     _.forEach(finalSchema,  async (item, key) => {
-      if (--remainingElements === 0) {
-        item.multiSave(props[key], multi, () => {
-          cb && cb(this.getKey());
-        });
-      } else {
-        item.multiSave(props[key], multi);
-      }
+      item.multiSave(props[key], multi);
     });
     this.multiExpire(props, multi);
     return multi;
@@ -73,6 +73,8 @@ export abstract class BaseModel<T extends IBaseModelProps> implements IRedisComp
     _.forEach(finalSchema, (item, key) => {
       !isNullOrUndefined(props[key]) && item.multiExpire(props[key], multi);
     });
+    const fieldNames = new Set(Object.keys(props));
+    this.fieldNameSet.multiExpire(fieldNames, multi);
     return multi;
   }
 
@@ -81,19 +83,26 @@ export abstract class BaseModel<T extends IBaseModelProps> implements IRedisComp
     _.forEach(finalSchema, (item) => {
       item.multiDelete(multi);
     });
+    this.fieldNameSet.multiDelete(multi);
     return multi;
   }
 
   async genLoad(): Promise<T | null> {
     const finalSchema = this.getFinalSchema();
-    const fieldNames = Object.keys(finalSchema);
-    const results = await Promise.all(fieldNames.map(async (fieldName) => {
-      const item = finalSchema[fieldName];
-      return {
-        fieldName,
-        value: await item.genLoad(),
-      };
-    }));
+    const fieldNames = await this.fieldNameSet.genLoad();
+    if (!fieldNames) {
+      return null;
+    }
+
+    const results = await Promise.all(Array.from(fieldNames).map(
+      async (fieldName) => {
+        const item = finalSchema[fieldName];
+        return {
+          fieldName,
+          value: await item.genLoad(),
+        };
+      },
+    ));
     const model: any = {};
     results.forEach((result) => {
       if (result.value !== null) {

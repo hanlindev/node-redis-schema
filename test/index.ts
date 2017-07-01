@@ -136,6 +136,19 @@ const invalidProps = {
   setProp: new Set(['1', '2', '3']),
 };
 
+async function genKeys(): Promise<Array<string>> {
+  return new Promise<Array<string>>((res, rej) => {
+    const client = nodeRedis.createClient();
+    client.keys('RedisTestModel', (error, response) => {
+      if (error) {
+        rej(error);
+      } else {
+        res(response);
+      }
+    });
+  });
+}
+
 describe('Redis', () => {
   let redis: Redis<IProps>;
 
@@ -153,6 +166,7 @@ describe('Redis', () => {
       expect(result).to.equal('OK');
       const loadedResult = await redis.genLoadModel();
       expect(loadedResult).to.not.equal(defaultProps);
+      expect(await genKeys()).to.be.empty;
     });
   });
 
@@ -171,15 +185,6 @@ describe('Redis', () => {
     });
   });
 
-  describe('testTtl', () => {
-    it('delets the data after ttl', async () => {
-      await redis.genSaveModel(defaultProps);
-      await genWait(2);
-      const result = await redis.genLoadModel();
-      expect(result).to.be.null;
-    }).timeout(4000);
-  });
-
   describe('with validation', () => {
     it('throws when saving invalid model', () => {
       expect(async () => {
@@ -188,12 +193,19 @@ describe('Redis', () => {
     });
 
     it('loads minimally valid model', async () => {
-      nodeRedis.createClient().keys('*', (err, res) => console.log(res));//fd
       await redis.genDeleteModel();
       await redis.genSaveModel(minimalValidProps);
       const result = await redis.genLoadModel();
-      console.log(JSON.stringify(result, null, 2));//fd
       expect(result).to.be.deep.equal(minimalValidProps);
     });
+  });
+
+  describe('testTtl', () => {
+    it('delets the data after ttl', async () => {
+      await redis.genSaveModel(defaultProps);
+      await genWait(2);
+      const result = await redis.genLoadModel();
+      expect(result).to.be.null;
+    }).timeout(4000);
   });
 });

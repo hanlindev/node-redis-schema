@@ -1,5 +1,7 @@
+import {Multi} from 'redis';
 import {BaseModel} from './BaseModel';
-import {IRedisComposeType, IRedisType, RedisSchemaType, IRedisSchemaItemFactory} from './interfaces';
+import {RSet} from './Set';
+import {IMultiSaveCallback, IRedisComposeType, IRedisType, RedisSchemaType, IRedisSchemaItemFactory} from './interfaces';
 
 export class Shape extends BaseModel<any> {
   private constructor(
