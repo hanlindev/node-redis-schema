@@ -142,6 +142,10 @@ If you know React's [prop-types'](https://www.npmjs.com/package/prop-types) synt
 
 All built-in types comes with data validation logic. 1 ~ 5 are simple `instanceof` checks. 6 and 7 uses their type arguments' validation and only passes when all items are valid. The implication is that all fields in a schema are treated as required fields. Null or undefined values are not acceptable.
 
+## Redis Client Options
+
+You may pass in options to configure the `redis` client. `redis-schema` uses the [`redis`](https://www.npmjs.com/package/redis) package so all options accepted by the `redis` package are accepted here, too. Click [here](https://www.npmjs.com/package/redis#options-object-properties) for all options.
+
 ## Intended Usage
 
 Essentially, all Redis Schema does is key management. It abstracts away the process to come up with Redis keys, ensuring consistent keys across your Redis server. Thus Redis Schema is not an ORM. If you need to change the structure of persisted data, you'll still need to do it manually. However with the help of a key registry (comiong soon), you are able to perform automated migration by collecting all old data in your migration script. Still, this library will be perfect for you if you only want the ability to persist structural data in Redis.
@@ -149,4 +153,3 @@ Essentially, all Redis Schema does is key management. It abstracts away the proc
 ## Roadmap to V1:
 
 1. Implement model registry to keep track of top-level model keys.
-2. Add essential options, including but not limited to auth, redis server host and port

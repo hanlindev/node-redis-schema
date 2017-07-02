@@ -1,18 +1,21 @@
 import * as redis from 'redis';
-import {Multi} from 'redis';
+import {Multi, ClientOpts} from 'redis';
 import {IRedisComposeType, IModelFactory} from './types';
 
 export * from './types';
 
 export class Redis<T> {
   private model: IRedisComposeType<T>;
-  constructor(readonly clazz: IModelFactory<T>) {
+  constructor(
+    readonly clazz: IModelFactory<T>, 
+    readonly options?: ClientOpts,
+  ) {
     this.model = clazz.getInstance();
   }
 
   async genSaveModel(props: T): Promise<'OK'> {
     try {
-      const client = redis.createClient();
+      const client = redis.createClient(this.options);
       let multi = client.multi();
       this.model.multiSave(props, multi);
       await this.execMulti(multi);
@@ -25,9 +28,11 @@ export class Redis<T> {
 
   async genDeleteModel(): Promise<'OK'> {
     try {
-      const multi = redis.createClient().multi();
+      const client = redis.createClient(this.options);
+      const multi = client.multi();
       this.model.multiDelete(multi);
       await this.execMulti(multi);
+      client.quit();
       return 'OK';
     } catch (e) {
       throw e;
