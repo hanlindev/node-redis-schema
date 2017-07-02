@@ -140,6 +140,10 @@ If you know React's [prop-types'](https://www.npmjs.com/package/prop-types) synt
 
    Similar to `listOf` but the argument should be an object of `IRedisComposeType` implementation. All subclasses of `BaseModel` are `IRedisComposeType` implementations.
 
+9. `hashOf`
+
+   Similar to `listOf` but the model needs to be an object whose key is string and value is the given model type that implements the `IRedisType` interface.
+
 All built-in types comes with data validation logic. 1 ~ 5 are simple `instanceof` checks. 6 and 7 uses their type arguments' validation and only passes when all items are valid. The implication is that all fields in a schema are treated as required fields. Null or undefined values are not acceptable.
 
 ## Redis Client Options

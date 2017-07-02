@@ -6,6 +6,7 @@ import {Shape} from './Shape';
 import {Number} from './Number';
 import {ListOf} from './ListOf';
 import {InstanceOf} from './InstanceOf';
+import {HashOf, IHashOf} from './HashOf';
 import {IRedisComposeType, IRedisType, IRedisSchemaItemFactory, ISchemaItemFactory, IModelFactory} from './interfaces';
 
 export * from './interfaces';
@@ -20,5 +21,6 @@ export const Types = {
   set: RSet.getFactory(),
   shape: Shape.getFactory(),
   listOf: ListOf.getFactory(),
+  hashOf: HashOf.getFactory(),
   instanceOf: InstanceOf.getFactory(), 
 }

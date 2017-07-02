@@ -112,17 +112,8 @@ export abstract class BaseModel<T extends IBaseModelProps> implements IRedisComp
     return (this.validate(model)) ? model as T : null;
   }
 
-  genIsSet(): Promise<boolean> {
-    return new Promise<boolean>((res, rej) => {
-      const client = redis.createClient();
-      client.exists(this.key, (error, result) => {
-        if (error) {
-          rej(error);
-        } else {
-          res(result === 1);
-        }
-      });
-    });
+  async genIsSet(): Promise<boolean> {
+    return await this.fieldNameSet.genIsSet();
   }
 
   validate(value: any): boolean {

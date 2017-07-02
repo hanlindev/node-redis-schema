@@ -30,6 +30,7 @@ interface IProps {
   numberProp?: number;
   listOfListProp?: Array<Array<number>>;
   listOfInstance: Array<INestedModelProps>;
+  hashOfProp?: {[key: string]: INestedModelProps};
 }
 
 class TestNestModel extends BaseModel<INestedModelProps> {
@@ -77,6 +78,7 @@ class TestModel extends BaseModel<IProps> {
         Types.listOf<INestedModelProps>(
           Types.instanceOf(TestNestModel).isRequired,
         ),
+      hashOfProp: Types.hashOf(Types.instanceOf(TestNestModel)),
     };
   }
 
@@ -121,7 +123,15 @@ const defaultProps: IProps = {
   listOfInstance: [{
     requiredString: 'a',
     optionalNumber: 1,
-  }]
+  }],
+  hashOfProp: {
+    first: {
+      requiredString: 'first',
+    },
+    second: {
+      requiredString: 'second',
+    },
+  }
 };
 
 const minimalValidProps: IProps = {

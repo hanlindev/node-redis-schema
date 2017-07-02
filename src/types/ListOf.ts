@@ -18,7 +18,7 @@ export class ListOf<T> extends BaseType<Array<T>> {
   genLoad(): Promise<Array<T> | null> {
     return new Promise<Array<T> | null>((res, rej) => {
       const client = redis.createClient();
-      client.get(this.key, async (error, length) => {
+      client.get(this.getKey(), async (error, length) => {
         if (error) {
           rej(error);
         } else {
@@ -26,7 +26,7 @@ export class ListOf<T> extends BaseType<Array<T>> {
           if (_.isFinite(numberLength)) {
             const result = await Promise.all(_.range(numberLength).map(
               async (index) => {
-                const finalShape = this.shape(this.key, index.toString());
+                const finalShape = this.shape(this.getKey(), index.toString());
                 return await finalShape.genLoad();
               }
             ));
@@ -52,13 +52,13 @@ export class ListOf<T> extends BaseType<Array<T>> {
       throw new TypeError('Argument to RedisListOf is of incorrect type.');
     }
 
-    multi.del(this.key);
     if (Array.isArray(value)) {
+      multi.del(this.getKey());
       value.forEach((item, i) => {
-        const finalShape = this.shape(this.key, i.toString());
+        const finalShape = this.shape(this.getKey(), i.toString());
         finalShape.multiSave(item, multi);
       });
-      multi.set(this.key, value.length.toString());
+      multi.set(this.getKey(), value.length.toString());
       this.multiExpire(value, multi);
     }
     return multi;
@@ -71,7 +71,7 @@ export class ListOf<T> extends BaseType<Array<T>> {
 
     super.multiExpire(value, multi);
     Array.isArray(value) && value.forEach((item, i) => {
-      const finalShape = this.shape(this.key, i.toString());
+      const finalShape = this.shape(this.getKey(), i.toString());
       finalShape.setTtl(this.ttl);
       finalShape.multiExpire(item, multi);
     });
@@ -84,7 +84,7 @@ export class ListOf<T> extends BaseType<Array<T>> {
     }
 
     return Array.isArray(value) && value.every((item, i) => {
-      const finalShape = this.shape(this.key, i.toString());
+      const finalShape = this.shape(this.getKey(), i.toString());
       return finalShape.validate(item);
     });
   }
