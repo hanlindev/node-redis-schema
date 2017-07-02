@@ -1,6 +1,6 @@
 {
   "name": "redis-schema",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Declarative Redis",
   "main": "index.js",
   "repository": "https://github.com/hanlindev/node-redis-schema",

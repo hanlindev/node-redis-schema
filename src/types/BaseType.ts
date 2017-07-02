@@ -5,6 +5,7 @@ import {expireImpl} from './utils';
 
 export abstract class BaseType<TLoad> implements IRedisType<TLoad> {
   protected ttl?: RedisTtlType;
+  static KEY_DELIMITER = '.';
 
   constructor(readonly key: string, readonly isRequired: boolean) {}
   abstract genLoad(): Promise<TLoad>;
@@ -23,7 +24,7 @@ export abstract class BaseType<TLoad> implements IRedisType<TLoad> {
 
   getKey(parentKey: string = ''): string {
     if (parentKey) {
-      return this.key.replace(`${parentKey}_`, '');
+      return this.key.replace(`${parentKey}${BaseType.KEY_DELIMITER}`, '');
     }
     return this.key;
   }
@@ -50,6 +51,6 @@ export abstract class BaseType<TLoad> implements IRedisType<TLoad> {
   }
 
   protected static getFinalKey(parentKey: string, dataKey: string): string {
-    return `${parentKey}_${dataKey}`;
+    return `${parentKey}${BaseType.KEY_DELIMITER}${dataKey}`;
   }
 }

@@ -52,8 +52,8 @@ export class ListOf<T> extends BaseType<Array<T>> {
       throw new TypeError('Argument to RedisListOf is of incorrect type.');
     }
 
+    this.multiDelete(multi);
     if (Array.isArray(value)) {
-      multi.del(this.getKey());
       value.forEach((item, i) => {
         const finalShape = this.shape(this.getKey(), i.toString());
         finalShape.multiSave(item, multi);

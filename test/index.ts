@@ -135,11 +135,9 @@ const defaultProps: IProps = {
 };
 
 const minimalValidProps: IProps = {
-  listProp: ['a', 'b', 'c'],
+  listProp: [],
   listOfShapeProp: [{shapeNumber: 0}],
-  listOfInstance: [{
-    requiredString: 'a',
-  }],
+  listOfInstance: [],
 };
 
 const invalidProps = {

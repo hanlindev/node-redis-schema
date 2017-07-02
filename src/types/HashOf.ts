@@ -38,8 +38,8 @@ export class HashOf<T> extends BaseType<IHashOf<T>> {
       throw new TypeError('Argument to HashOf is of incorrect type');
     }
 
+    this.fieldNameSet.multiDelete(multi);
     if (value) {
-      this.fieldNameSet.multiDelete(multi);
       _.forEach(value, (fieldValue, fieldName: string) => {
         const finalType = this.type(this.getFieldKeyPrefix(), fieldName);
         finalType.multiSave(fieldValue, multi);

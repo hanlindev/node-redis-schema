@@ -157,3 +157,8 @@ Essentially, all Redis Schema does is key management. It abstracts away the proc
 ## Roadmap to V1:
 
 1. Implement model registry to keep track of top-level model keys.
+2. More useful JSON manipulations, to make this more useful than simply storing data structures as JSON strings. For example:
+  
+    a) Get/set values on a JSON path. With this, things can be done without loading the complete data structure.
+    
+    b) Get meta data on a JSON path, like `size` or `isSet`.

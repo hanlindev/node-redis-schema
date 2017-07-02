@@ -1,14 +1,34 @@
 import * as _ from 'lodash';
 import * as redis from 'redis';
+import {Multi} from 'redis';
 import {BaseType} from './BaseType';
-import {IMultiSaveCallback, IRedisSchemaItemFactory} from './interfaces';
+import {Number} from './Number';
+import {IMultiSaveCallback, IRedisSchemaItemFactory, RedisTtlType} from './interfaces';
 
 export class List extends BaseType<Array<string>> {
+  private length: Number;
   private errorMessage(value: any) {
     return (
       'Argument to RedisList is not ' 
         + `array of string. (arg: ${_.toString(value)})`
     );
+  }
+
+  constructor(
+    key: string,
+    isRequired: boolean
+  ) {
+    super(key, isRequired);
+    this.length = new Number(
+      BaseType.getFinalKey(this.getKey(), 'length'), 
+      true,
+    );
+  }
+
+  setTtl(ttl: RedisTtlType): this {
+    super.setTtl(ttl);
+    this.length.setTtl(ttl);
+    return this;
   }
 
   multiSave(
@@ -22,38 +42,53 @@ export class List extends BaseType<Array<string>> {
 
     this.multiDelete(multi);
     if (Array.isArray(value)) {
-      multi.rpush(this.key, value, (error, response) => {
-        if (response) {
-          cb && cb(this.getKey());
-        }
-      });
+      if (value.length > 0) {
+        multi.rpush(this.key, value, (error, response) => {
+          if (response) {
+            cb && cb(this.getKey());
+          }
+        });
+      }
+      this.length.multiSave(value.length, multi);
       this.multiExpire(value, multi);
     }
     return multi;
   }
 
+  multiExpire(value: Array<string>, multi: Multi): Multi {
+    super.multiExpire(value, multi);
+    return this.length.multiExpire(value.length, multi);
+  }
+
+  multiDelete(multi: Multi): Multi {
+    super.multiDelete(multi);
+    return this.length.multiDelete(multi);
+  }
+
   genLoad(): Promise<Array<string> | null> {
     return new Promise<Array<string> | null>(async (res, rej) => {
       const client = redis.createClient();
-      const isSet = await this.genIsSet();
-      if (isSet) {
-        client.llen(this.key, (e, count) => {
-          if (e) {
-            rej(e);
-          } else {
-            client.lrange(this.key, 0, count - 1, (e, list) => {
-              if (e) {
-                rej(e);
-              } else {
-                res(list);
-              }
-            });
-          }
-        });
+      const length = await this.length.genLoad();
+      if (_.isFinite(length) && length !== null) {
+        if (length > 0) {
+          client.lrange(this.key, 0, length - 1, (e, list) => {
+            if (e) {
+              rej(e);
+            } else {
+              res(list);
+            }
+          });
+        } else {
+          res([]);
+        }
       } else {
         res(null);
       }
     });
+  }
+
+  async genIsSet(): Promise<boolean> {
+    return await this.length.genIsSet();
   }
 
   validate(value: Array<string>): boolean {

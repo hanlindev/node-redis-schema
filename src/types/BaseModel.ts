@@ -4,6 +4,7 @@ import * as moment from 'moment';
 import {RSet} from './Set';
 import {Multi} from 'redis';
 import {IRedisType, IRedisComposeType, RedisSchemaType, RedisTtlType, IMultiSaveCallback} from './interfaces';
+import {BaseType} from './BaseType';
 import {isNullOrUndefined} from './utils';
 
 export interface IBaseModelProps {
@@ -124,6 +125,6 @@ export abstract class BaseModel<T extends IBaseModelProps> implements IRedisComp
   }
 
   protected static getFinalKey(parentKey: string, dataKey: string) {
-    return `${parentKey}_${dataKey}`;
+    return `${parentKey}${BaseType.KEY_DELIMITER}${dataKey}`;
   }
 }
