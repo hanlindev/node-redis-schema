@@ -1,8 +1,8 @@
 {
   "name": "redis-schema",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Declarative Redis",
-  "main": "index.js",
+  "main": "index/src/index.js",
   "repository": "https://github.com/hanlindev/node-redis-schema",
   "author": "Han Lin <hanlin.dev@gmail.com>",
   "license": "MIT",
