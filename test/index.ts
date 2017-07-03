@@ -25,7 +25,7 @@ interface IProps {
   listProp: Array<string>;
   listOfShapeProp: Array<ITestShape>;
   hashProp?: {[key: string]: string};
-  setProp?: Set<string>;
+  setProp: Set<string>;
   stringProp?: string;
   numberProp?: number;
   listOfListProp?: Array<Array<number>>;
@@ -136,6 +136,7 @@ const defaultProps: IProps = {
 
 const minimalValidProps: IProps = {
   listProp: [],
+  setProp: new Set(),
   listOfShapeProp: [{shapeNumber: 0}],
   listOfInstance: [],
 };
