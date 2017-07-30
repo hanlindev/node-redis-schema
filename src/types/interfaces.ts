@@ -25,7 +25,7 @@ export interface IRedisType<TLoad> {
     cb?: IMultiSaveCallback,
   ): redis.Multi;
   multiExpire(value: TLoad, multi: redis.Multi): redis.Multi;
-  genLoad(): Promise<TLoad>;
+  genLoad(): Promise<TLoad | null>;
   multiDelete(multi: redis.Multi): redis.Multi;
   genIsSet(): Promise<boolean>;
   validate(value: TLoad): boolean;
